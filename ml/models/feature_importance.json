@@ -1,0 +1,62 @@
+[
+  {
+    "feature": "percentage_change",
+    "importance": 0.2413
+  },
+  {
+    "feature": "drift_rate",
+    "importance": 0.1532
+  },
+  {
+    "feature": "overall_change_0h_168h",
+    "importance": 0.1484
+  },
+  {
+    "feature": "value_168h",
+    "importance": 0.118
+  },
+  {
+    "feature": "change_96h_168h",
+    "importance": 0.1129
+  },
+  {
+    "feature": "change_0h_24h",
+    "importance": 0.085
+  },
+  {
+    "feature": "change_24h_96h",
+    "importance": 0.0606
+  },
+  {
+    "feature": "value_96h",
+    "importance": 0.0398
+  },
+  {
+    "feature": "value_24h",
+    "importance": 0.0164
+  },
+  {
+    "feature": "unusual_trajectory",
+    "importance": 0.0142
+  },
+  {
+    "feature": "value_0h",
+    "importance": 0.0066
+  },
+  {
+    "feature": "temperature_C",
+    "importance": 0.0022
+  },
+  {
+    "feature": "voltage_V",
+    "importance": 0.0006
+  },
+  {
+    "feature": "component_type_enc",
+    "importance": 0.0005
+  },
+  {
+    "feature": "manufacturer_enc",
+    "importance": 0.0004
+  }
+]

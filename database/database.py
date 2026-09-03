@@ -1,80 +1,88 @@
-import pandas as pd
 import sqlite3
+import pandas as pd
+import os
 
-# -----------------------------
-# 1. File paths
-# -----------------------------
-
-CSV_PATH = r"C:\Users\pc\AnomeX\data\anomex_dataset.csv"
-DB_PATH = r"C:\Users\pc\AnomeX\database\anomex.db"
+from ml.config import DATASET_CSV, DATABASE_FILE
 
 
-# -----------------------------
-# 2. Load CSV using Pandas
-# -----------------------------
+# -----------------------------------
+# Connect to database
+# -----------------------------------
 
-df = pd.read_csv(CSV_PATH)
-
-print("CSV loaded successfully!")
-print("Rows:", len(df))
-print("Columns:", len(df.columns))
+def get_connection():
+    os.makedirs(os.path.dirname(DATABASE_FILE), exist_ok=True)
+    return sqlite3.connect(DATABASE_FILE)
 
 
-# -----------------------------
-# 3. Connect to SQLite
-# -----------------------------
+# -----------------------------------
+# Initialize database from CSV
+# -----------------------------------
 
-connection = sqlite3.connect(DB_PATH)
+def initialize_database():
+    df = pd.read_csv(DATASET_CSV)
 
-print("Connected to SQLite database!")
+    connection = get_connection()
 
+    df.to_sql(
+        "components",
+        connection,
+        if_exists="replace",
+        index=False
+    )
 
-# -----------------------------
-# 4. Create/replace table
-# -----------------------------
+    connection.close()
 
-df.to_sql(
-    "components",
-    connection,
-    if_exists="replace",
-    index=False
-)
-
-print("Data transferred to 'components' table!")
+    return len(df)
 
 
-# -----------------------------
-# 5. Verify the database
-# -----------------------------
+# -----------------------------------
+# Get all components
+# -----------------------------------
 
-cursor = connection.cursor()
+def get_all_components():
+    connection = get_connection()
 
-cursor.execute("SELECT COUNT(*) FROM components")
+    df = pd.read_sql_query(
+        "SELECT * FROM components",
+        connection
+    )
 
-row_count = cursor.fetchone()[0]
+    connection.close()
 
-print("Rows in database:", row_count)
-
-
-# -----------------------------
-# 6. Show first 5 records
-# -----------------------------
-
-cursor.execute("SELECT * FROM components LIMIT 5")
-
-rows = cursor.fetchall()
-
-print("\nFirst 5 records:")
-
-for row in rows:
-    print(row)
+    return df
 
 
-# -----------------------------
-# 7. Close database
-# -----------------------------
+# -----------------------------------
+# Get one component
+# -----------------------------------
 
-connection.close()
+def get_component(component_id):
+    connection = get_connection()
 
-print("\nDatabase connection closed.")
-print("SQLite setup completed successfully!")
+    df = pd.read_sql_query(
+        "SELECT * FROM components WHERE component_id = ?",
+        connection,
+        params=(component_id,)
+    )
+
+    connection.close()
+
+    return df
+
+
+# -----------------------------------
+# Get components by lot
+# -----------------------------------
+
+def get_components_by_lot(lot_id):
+    connection = get_connection()
+
+    df = pd.read_sql_query(
+        "SELECT * FROM components WHERE lot_id = ?",
+        connection,
+        params=(lot_id,)
+    )
+
+    connection.close()
+
+    return df
