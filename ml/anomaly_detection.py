@@ -595,62 +595,59 @@ def explain_anomaly(row: pd.Series, group_stats: Optional[dict] = None) -> list:
 
 
 # ------------------------------------------------------------------
-# 10. INTEGRATION WITH EXISTING (SUPERVISED) PREDICTION
+# 10. SINGLE-COMPONENT ANOMALY ANALYSIS
 # ------------------------------------------------------------------
 def analyze_component(component_id: str, anomaly_df: Optional[pd.DataFrame] = None) -> dict:
     """
-    Combine the EXISTING supervised failure-prediction pipeline
-    (ml.service.predict_component) with this module's unsupervised
-    anomaly detection, without modifying either pipeline.
+    Analyze one component using AnomeX dynamic anomaly detection.
 
-    Returns a dict with:
-      failure_probability, predicted_label, health_score, risk_level
-        (from the existing failure model, untouched)
-      anomaly_score, is_anomaly, anomaly_rank
-        (from this module)
-      anomaly_explanation
-        (from explain_anomaly)
+    Returns:
+        component_id
+        anomaly_score
+        is_anomaly
+        anomaly_rank
+        anomaly_explanation
 
-    If `anomaly_df` (the output of detect_anomalies()/predict_anomalies())
-    isn't supplied, this will load the DB via database.database and run
-    detect_anomalies() on it.
+    This function intentionally handles only anomaly detection.
+    Failure-risk prediction and drift prediction are orchestrated
+    separately by ml.service.predict_component().
     """
-    # --- existing supervised prediction (untouched) ---
-    failure_result = {}
-    try:
-        from ml.service import predict_component  # existing, not modified
 
-        failure_result = predict_component(component_id) or {}
-    except Exception as exc:  # pragma: no cover - defensive, keeps this
-        # module usable even if ml.service isn't importable in a given
-        # context (e.g. being run standalone/tested outside the app).
-        failure_result = {"error": f"Could not run existing predict_component: {exc}"}
-
-    # --- this module's anomaly detection ---
+    # Load and score the dataset if anomaly results were not supplied.
     if anomaly_df is None:
         try:
-            from database.database import get_all_components  # existing, not modified
+            from database.database import get_all_components
 
             df = get_all_components()
         except Exception:
             df = pd.read_csv(DATASET_CSV)
+
         anomaly_df = detect_anomalies(df)
 
-    anomaly_result = get_component_anomaly(component_id, anomaly_df)
-    reasons = explain_anomaly(anomaly_df[anomaly_df["component_id"] == component_id].iloc[0])
+    # Find the requested component.
+    component_rows = anomaly_df[
+        anomaly_df["component_id"] == component_id
+    ]
 
-    combined = {
+    if component_rows.empty:
+        return None
+
+    component_row = component_rows.iloc[0]
+
+    anomaly_result = get_component_anomaly(
+        component_id,
+        anomaly_df
+    )
+
+    reasons = explain_anomaly(component_row)
+
+    return {
         "component_id": component_id,
-        "failure_probability": failure_result.get("failure_probability"),
-        "predicted_label": failure_result.get("predicted_label"),
-        "health_score": failure_result.get("health_score"),
-        "risk_level": failure_result.get("risk_level"),
         "anomaly_score": anomaly_result.get("anomaly_score"),
         "is_anomaly": anomaly_result.get("is_anomaly"),
         "anomaly_rank": anomaly_result.get("anomaly_rank"),
         "anomaly_explanation": reasons,
     }
-    return combined
 
 
 # ------------------------------------------------------------------
