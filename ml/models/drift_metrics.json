@@ -1,0 +1,66 @@
+{
+  "feature_names": [
+    "value_0h",
+    "value_24h",
+    "early_change",
+    "early_slope"
+  ],
+  "target": "value_168h",
+  "safety_slope": 0.14313184523809513,
+  "safety_slope_meta": {
+    "method": "percentile_of_historical_observed_drift_rate",
+    "formula": "(value_168h - value_0h) / 168",
+    "percentile_used": 95,
+    "rows_used": 8000,
+    "rows_included": "ALL training rows (failure_label NOT used to filter, to keep this an unsupervised/data-derived criterion rather than a smuggled-in failure threshold)",
+    "computed_on": "training split only (test set never touched)",
+    "safety_slope_value": 0.14313184523809513,
+    "cross_check_vs_existing_drift_rate_column": {
+      "mean_absolute_difference": 4.7367529142734384e-17,
+      "matches_expected_convention": true
+    }
+  },
+  "metrics": {
+    "mae": 2.825893418037917,
+    "rmse": 8.67429695363153,
+    "r2": 0.2975839596625546,
+    "n_train": 8000,
+    "n_test": 2000,
+    "features": [
+      "value_0h",
+      "value_24h",
+      "early_change",
+      "early_slope"
+    ],
+    "target": "value_168h",
+    "model_type": "GradientBoosting",
+    "selected_model": "GradientBoosting",
+    "selection_method": "5-fold CV on training split only, lowest mean MAE",
+    "cv_results": {
+      "RandomForest": {
+        "mae": 4.530202250162698,
+        "rmse": 10.327908894644358,
+        "r2": 0.14164137962648998
+      },
+      "GradientBoosting": {
+        "mae": 3.1540529084965656,
+        "rmse": 9.796803583421507,
+        "r2": 0.22814196548204313
+      }
+    },
+    "test_results_all_candidates": {
+      "RandomForest": {
+        "mae": 4.109424006192461,
+        "rmse": 9.134777246760153,
+        "r2": 0.2210281345848062
+      },
+      "GradientBoosting": {
+        "mae": 2.825893418037917,
+        "rmse": 8.67429695363153,
+        "r2": 0.2975839596625546
+      }
+    }
+  },
+  "random_state": 42,
+  "test_size": 0.2
+}
